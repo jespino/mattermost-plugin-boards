@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useEffect}  from 'react'
+import React, {useEffect, useContext}  from 'react'
 import {FormattedMessage, IntlProvider, useIntl} from 'react-intl'
 
 import {getLanguage} from '../store/language'
@@ -10,11 +10,13 @@ import {useWebsockets} from '../hooks/websockets'
 import {Board, BoardMember} from '../blocks/board'
 import {getCurrentTeamId} from '../store/teams'
 import {IUser} from '../user'
+import isPagescontext from '../isPages'
 import {getMe, fetchMe} from '../store/users'
 import {loadBoards, loadMyBoardsMemberships} from '../store/initialLoad'
 import {getCurrentChannel} from '../store/channels'
 import {
     getMySortedBoards,
+    getMySortedPageFolders,
     setLinkToChannel,
     updateBoards,
     updateMembersEnsuringBoardsAndUsers,
@@ -38,6 +40,8 @@ import './rhsChannelBoards.scss'
 
 const RHSChannelBoards = () => {
     const boards = useAppSelector(getMySortedBoards)
+    const isPages = useContext(isPagescontext)
+    const pages = useAppSelector(getMySortedPageFolders)
     const teamId = useAppSelector(getCurrentTeamId)
     const currentChannel = useAppSelector(getCurrentChannel)
     const me = useAppSelector<IUser|null>(getMe)
@@ -75,7 +79,10 @@ const RHSChannelBoards = () => {
         }
     }, [me])
 
-    if (!boards) {
+    if (!isPages && !boards) {
+        return null
+    }
+    if (isPages && !pages) {
         return null
     }
     if (!teamId) {
@@ -88,7 +95,12 @@ const RHSChannelBoards = () => {
         return null
     }
 
-    const channelBoards = boards.filter((b) => b.channelId === currentChannel.id)
+    let channelBoards
+    if (isPages) {
+      channelBoards = pages.filter((b) => b.channelId === currentChannel.id)
+    } else {
+      channelBoards = boards.filter((b) => b.channelId === currentChannel.id)
+    }
 
     let channelName = currentChannel.display_name
     let headerChannelName = currentChannel.display_name
@@ -106,17 +118,30 @@ const RHSChannelBoards = () => {
             <div className='focalboard-body'>
                 <div className='RHSChannelBoards empty'>
                     <h2>
-                        <FormattedMessage
-                            id='rhs-boards.no-boards-linked-to-channel'
-                            defaultMessage='No boards are linked to {channelName} yet'
-                            values={{channelName: headerChannelName}}
-                        />
+                        {isPages &&
+                            <FormattedMessage
+                                id='rhs-boards.no-pages-linked-to-channel'
+                                defaultMessage='No pages are linked to {channelName} yet'
+                                values={{channelName: headerChannelName}}
+                            />}
+                        {!isPages &&
+                            <FormattedMessage
+                                id='rhs-boards.no-boards-linked-to-channel'
+                                defaultMessage='No boards are linked to {channelName} yet'
+                                values={{channelName: headerChannelName}}
+                            />}
                     </h2>
                     <div className='empty-paragraph'>
-                        <FormattedMessage
-                            id='rhs-boards.no-boards-linked-to-channel-description'
-                            defaultMessage='Boards is a project management tool that helps define, organize, track and manage work across teams, using a familiar kanban board view.'
-                        />
+                        {isPages &&
+                          <FormattedMessage
+                              id='rhs-boards.no-pages-linked-to-channel-description'
+                              defaultMessage='Pages is a documentation tool that helps define, organize, track and manage documentation across teams, using a familiar wiki format.'
+                          />}
+                        {!isPages &&
+                          <FormattedMessage
+                              id='rhs-boards.no-boards-linked-to-channel-description'
+                              defaultMessage='Boards is a project management tool that helps define, organize, track and manage work across teams, using a familiar kanban board view.'
+                          />}
                     </div>
                     <div className='boards-screenshots'><img src={Utils.buildURL(boardsScreenshots, true)}/></div>
                     {me?.permissions?.find((s: string) => s === 'create_post') &&
@@ -125,11 +150,18 @@ const RHSChannelBoards = () => {
                             emphasis='primary'
                             size='medium'
                         >
-                            <FormattedMessage
-                                id='rhs-boards.link-boards-to-channel'
-                                defaultMessage='Link boards to {channelName}'
-                                values={{channelName: channelName}}
-                            />
+                            {isPages &&
+                              <FormattedMessage
+                                  id='rhs-boards.link-pages-to-channel'
+                                  defaultMessage='Link pages to {channelName}'
+                                  values={{channelName: channelName}}
+                              />}
+                            {!isPages &&
+                              <FormattedMessage
+                                  id='rhs-boards.link-boards-to-channel'
+                                  defaultMessage='Link boards to {channelName}'
+                                  values={{channelName: channelName}}
+                              />}
                         </Button>
                     }
                 </div>
@@ -142,10 +174,16 @@ const RHSChannelBoards = () => {
             <div className='RHSChannelBoards'>
                 <div className='rhs-boards-header'>
                     <span className='linked-boards'>
-                        <FormattedMessage
-                            id='rhs-boards.linked-boards'
-                            defaultMessage='Linked boards'
-                        />
+                        {isPages &&
+                          <FormattedMessage
+                              id='rhs-boards.linked-pages'
+                              defaultMessage='Linked pages'
+                          />}
+                        {!isPages &&
+                          <FormattedMessage
+                              id='rhs-boards.linked-boards'
+                              defaultMessage='Linked boards'
+                          />}
                     </span>
                     {me?.permissions?.find((s: string) => s === 'create_post') &&
                         <Button

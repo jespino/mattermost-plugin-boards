@@ -22,7 +22,8 @@ import {setTeam} from './store/teams'
 import WithWebSockets from './components/withWebSockets'
 import {setChannel} from './store/channels'
 import {initialLoad} from './store/initialLoad'
-import {Utils} from './utils'
+import isPagesContext from './isPages'
+import {Utils, IDType} from './utils'
 import './styles/focalboard-variables.scss'
 import './styles/main.scss'
 import './styles/labels.scss'
@@ -84,49 +85,14 @@ const TELEMETRY_OPTIONS = {
 
 type Props = {
     webSocketClient: MMWebSocketClient
+    baseURL: string
 }
-
-function customHistory() {
-    const history = createBrowserHistory({basename: Utils.getFrontendBaseURL()})
-
-    if (Utils.isDesktop()) {
-        window.addEventListener('message', (event: MessageEvent) => {
-            if (event.origin !== windowAny.location.origin) {
-                return
-            }
-
-            const pathName = event.data.message?.pathName
-            if (!pathName || !pathName.startsWith('/boards')) {
-                return
-            }
-
-            Utils.log(`Navigating Boards to ${pathName}`)
-            history.replace(pathName.replace('/boards', ''))
-        })
-    }
-    return {
-        ...history,
-        push: (path: string, state?: unknown) => {
-            if (Utils.isDesktop()) {
-                windowAny.postMessage(
-                    {
-                        type: 'browser-history-push',
-                        message: {
-                            path: `${windowAny.frontendBaseURL}${path}`,
-                        },
-                    },
-                    windowAny.location.origin,
-                )
-            } else {
-                history.push(path, state as Record<string, never>)
-            }
-        },
-    }
-}
-
-let browserHistory: History<unknown>
 
 const MainApp = (props: Props) => {
+    useEffect(() => {
+        windowAny.frontendBaseURL = props.baseURL
+    }, [props.baseURL])
+
     useEffect(() => {
         document.body.classList.add('focalboard-body')
         document.body.classList.add('app__body')
@@ -149,7 +115,10 @@ const MainApp = (props: Props) => {
             <ReduxProvider store={store}>
                 <WithWebSockets manifest={manifest} webSocketClient={props.webSocketClient}>
                     <div id='focalboard-app'>
-                        <App history={browserHistory} />
+                        <App
+                            history={windowAny.WebappUtils.browserHistory}
+                            pages={props.baseURL.endsWith('pages')}
+                        />
                     </div>
                     <div id='focalboard-root-portal' />
                 </WithWebSockets>
@@ -161,7 +130,7 @@ const MainApp = (props: Props) => {
 const HeaderComponent = () => {
     return (
         <ErrorBoundary>
-            <GlobalHeader history={browserHistory} />
+            <GlobalHeader history={windowAny.WebappUtils.browserHistory}/>
         </ErrorBoundary>
     )
 }
@@ -169,6 +138,8 @@ const HeaderComponent = () => {
 export default class Plugin {
     channelHeaderButtonId?: string
     rhsId?: string
+    rhsPagesId?: string
+    pagesAppIconId?: string
     boardSelectorId?: string
     registry?: PluginRegistry
 
@@ -178,7 +149,6 @@ export default class Plugin {
         const subpath = siteURL ? getSubpath(siteURL) : ''
         windowAny.frontendBaseURL = subpath + windowAny.frontendBaseURL
         windowAny.baseURL = subpath + windowAny.baseURL
-        browserHistory = customHistory()
         const cache = createIntlCache()
         const intl = createIntl({
             // modeled after <IntlProvider> in webapp/src/app.tsx
@@ -186,6 +156,7 @@ export default class Plugin {
             messages: getMessages(getCurrentLanguage())
         }, cache)
 
+        const clientConfig = await octoClient.getClientConfig()
 
         this.registry = registry
 
@@ -250,8 +221,13 @@ export default class Plugin {
             if (currentTeamID && currentTeamID !== prevTeamID) {
                 if (prevTeamID && window.location.pathname.startsWith(windowAny.frontendBaseURL || '')) {
                     // Don't re-push the URL if we're already on a URL for the current team
-                    if (!window.location.pathname.startsWith(`${(windowAny.frontendBaseURL || '')}/team/${currentTeamID}`))
-                        browserHistory.push(`/team/${currentTeamID}`)
+                    if (!window.location.pathname.startsWith(`${(windowAny.frontendBaseURL || '')}/team/${currentTeamID}`)) {
+                        if (windowAny.frontendBaseURL?.endsWith('/pages')) {
+                            windowAny.WebappUtils.browserHistory.push(`/pages/team/${currentTeamID}`)
+                        } else {
+                            windowAny.WebappUtils.browserHistory.push(`/boards/team/${currentTeamID}`)
+                        }
+                    }
                 }
                 prevTeamID = currentTeamID
                 store.dispatch(setTeam(currentTeamID))
@@ -301,21 +277,82 @@ export default class Plugin {
             )
             this.rhsId = rhsId
 
+            const {rhsId: rhsPagesId, toggleRHSPlugin: toggleRHSPagesPlugin} = this.registry.registerRightHandSidebarComponent(
+                (props: {webSocketClient: MMWebSocketClient}) => (
+                    <ReduxProvider store={store}>
+                        <WithWebSockets manifest={manifest} webSocketClient={props.webSocketClient}>
+                            <isPagesContext.Provider value={true}>
+                                <RHSChannelBoards/>
+                            </isPagesContext.Provider>
+                        </WithWebSockets>
+                    </ReduxProvider>
+                ),
+                <ErrorBoundary>
+                    <ReduxProvider store={store}>
+                        <isPagesContext.Provider value={true}>
+                            <RHSChannelBoardsHeader/>
+                        </isPagesContext.Provider>
+                    </ReduxProvider>
+                </ErrorBoundary>
+                ,
+            )
+            this.rhsPagesId = rhsPagesId
+
             this.channelHeaderButtonId = registry.registerChannelHeaderButtonAction(<FocalboardIcon />, () => mmStore.dispatch(toggleRHSPlugin), 'Boards', 'Boards')
+            this.channelHeaderButtonId = registry.registerChannelHeaderButtonAction(<FocalboardIcon/>, () => mmStore.dispatch(toggleRHSPagesPlugin), 'Pages', 'Pages')
 
             this.registry.registerProduct(
                 '/boards',
                 'product-boards',
                 'Boards',
                 '/boards',
-                MainApp,
-                HeaderComponent,
+                (props) => <MainApp {...props} baseURL={subpath + '/boards'}/>,
+                () => <HeaderComponent/>,
                 () => null,
                 true,
             )
 
+            if (clientConfig?.featureFlags?.pagesProduct) {
+                this.registry.registerProduct(
+                             '/pages',
+                                  'file-text-outline',
+                                  'Pages',
+                                     '/pages',
+                    (props) => <MainApp {...props} baseURL={subpath + '/pages'}/>,
+                    () => <HeaderComponent/>,
+                    () => null,
+                    true,
+                )
+            }
+
             if (this.registry.registerAppBarComponent) {
-                this.registry.registerAppBarComponent(Utils.buildURL(appBarIcon, true), () => mmStore.dispatch(toggleRHSPlugin), intl.formatMessage({id: 'AppBar.Tooltip', defaultMessage: 'Toggle Linked Boards'}))
+                this.registry.registerAppBarComponent(Utils.buildURL(appBarIcon, true), () => {
+                    windowAny.frontendBaseURL = subpath + '/boards'
+                    mmStore.dispatch(toggleRHSPlugin)
+                }, intl.formatMessage({id: 'AppBar.Tooltip', defaultMessage: 'Toggle Linked Boards'}))
+                // this.registry.registerAppBarComponent(,  , intl.formatMessage({id: 'AppBar.TooltipPages', defaultMessage: 'Toggle Linked Pages'}))
+
+                if (clientConfig?.featureFlags?.pagesProduct) {
+                    // HACK: Register second app bar component
+                    // TODO: Remove this hack whenever is possible
+                    const data = {
+                        id: Utils.createGuid(IDType.None),
+                        pluginId: manifest.id+'pages',
+                        iconUrl: Utils.buildURL(appBarIconPages, true),
+                        action: () => {
+                            windowAny.frontendBaseURL = subpath + '/pages'
+                            mmStore.dispatch(toggleRHSPagesPlugin)
+                        },
+                        tooltipText: intl.formatMessage({id: 'AppBar.TooltipPages', defaultMessage: 'Toggle Linked Pages'}),
+                    }
+
+                    mmStore.dispatch({
+                        type: 'RECEIVED_PLUGIN_COMPONENT',
+                        name: 'AppBar',
+                        data,
+                    } as any);
+                    this.pagesAppIconId = data.id
+                }
             }
 
             if (this.registry.registerActionAfterChannelCreation) {
@@ -380,8 +417,7 @@ export default class Plugin {
             </ReduxProvider>
         ))
 
-        const config = await octoClient.getClientConfig()
-        if (config?.telemetry) {
+        if (clientConfig?.telemetry) {
             let rudderKey = TELEMETRY_RUDDER_KEY
             let rudderUrl = TELEMETRY_RUDDER_DATAPLANE_URL
 
@@ -400,7 +436,7 @@ export default class Plugin {
                 }
                 rudderAnalytics.load(rudderKey, rudderUrl, rudderCfg)
 
-                rudderAnalytics.identify(config?.telemetryid, {}, TELEMETRY_OPTIONS)
+                rudderAnalytics.identify(clientConfig?.telemetryid, {}, TELEMETRY_OPTIONS)
 
                 rudderAnalytics.page('BoardsLoaded', '',
                     TELEMETRY_OPTIONS.page,
@@ -429,6 +465,12 @@ export default class Plugin {
         if (this.rhsId) {
             this.registry?.unregisterComponent(this.rhsId)
         }
+        if (this.rhsPagesId) {
+            this.registry?.unregisterComponent(this.rhsPagesId)
+        }
+        if (this.pagesAppIconId) {
+            this.registry?.unregisterComponent(this.pagesAppIconId)
+        }
         if (this.boardSelectorId) {
             this.registry?.unregisterComponent(this.boardSelectorId)
         }
@@ -437,3 +479,4 @@ export default class Plugin {
         this.registry?.unregisterWebSocketEventHandler(wsClient.clientPrefix + ACTION_UPDATE_BLOCK)
     }
 }
+

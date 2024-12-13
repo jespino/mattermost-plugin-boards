@@ -17,6 +17,7 @@ const (
 	IDTypeBoard      IDType = 'b'
 	IDTypeCard       IDType = 'c'
 	IDTypeView       IDType = 'v'
+	IDTypePage       IDType = 'p'
 	IDTypeSession    IDType = 's'
 	IDTypeUser       IDType = 'u'
 	IDTypeToken      IDType = 'k'
