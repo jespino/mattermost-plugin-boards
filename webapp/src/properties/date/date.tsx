@@ -54,7 +54,7 @@ function datePropertyToString(dateProperty: DateProperty): string {
 const loadedLocales: Record<string, moment.Locale> = {}
 
 function DateRange(props: PropertyProps): JSX.Element {
-    const {propertyValue, propertyTemplate, showEmptyPlaceholder, readOnly, board, card} = props
+    const {propertyValue, propertyTemplate, showEmptyPlaceholder, readOnly, board, item} = props
     const [value, setValue] = useState(propertyValue)
     const intl = useIntl()
 
@@ -68,7 +68,7 @@ function DateRange(props: PropertyProps): JSX.Element {
         if (value !== newValue) {
             setValue(newValue)
         }
-    }, [value, board.id, card, propertyTemplate.id])
+    }, [value, board.id, item, propertyTemplate.id])
 
     const getDisplayDate = (date: Date | null | undefined) => {
         let displayDate = ''
@@ -158,7 +158,7 @@ function DateRange(props: PropertyProps): JSX.Element {
     const onClose = () => {
         const newDate = datePropertyToString(dateProperty)
         onChange(newDate)
-        mutator.changePropertyValue(board.id, card, propertyTemplate.id, newDate)
+        mutator.changePropertyValue(board.id, item, propertyTemplate.id, newDate)
         setShowDialog(false)
     }
 

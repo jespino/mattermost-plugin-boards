@@ -238,7 +238,7 @@ const TableRow = (props: Props) => {
                     >
                         <PropertyValueElement
                             readOnly={props.readonly}
-                            card={card}
+                            item={card}
                             board={board}
                             propertyTemplate={template}
                             showEmptyPlaceholder={false}

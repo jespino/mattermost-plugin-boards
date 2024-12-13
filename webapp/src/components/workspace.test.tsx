@@ -147,6 +147,9 @@ describe('src/components/workspace', () => {
             },
             current: activeView.id,
         },
+        pages: {
+            pages: {},
+        },
         cards: {
             templates: [],
             cards: [card1, card2, card3],
@@ -269,6 +272,9 @@ describe('src/components/workspace', () => {
             views: {
                 views: {},
             },
+            pages: {
+                pages: {},
+            },
             cards: {
                 cards: [],
             },
@@ -368,6 +374,9 @@ describe('src/components/workspace', () => {
                     [activeView.id]: activeView,
                 },
                 current: activeView.id,
+            },
+            pages: {
+                pages: {},
             },
             cards: {
                 templates: [],
@@ -472,6 +481,9 @@ describe('src/components/workspace', () => {
                     [activeView.id]: activeView,
                 },
                 current: activeView.id,
+            },
+            pages: {
+                pages: {},
             },
             cards: {
                 templates: [],
@@ -581,6 +593,9 @@ describe('src/components/workspace', () => {
                     [activeView.id]: activeView,
                 },
                 current: activeView.id,
+            },
+            pages: {
+                pages: {},
             },
             cards: {
                 templates: [],

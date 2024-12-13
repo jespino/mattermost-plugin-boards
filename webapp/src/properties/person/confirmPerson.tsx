@@ -19,7 +19,7 @@ import ConfirmAddUserForNotifications from '../../components/confirmAddUserForNo
 import PersonSelector from '../../components/personSelector'
 
 const ConfirmPerson = (props: PropertyProps): JSX.Element => {
-    const {card, board, propertyTemplate, propertyValue, property, readOnly} = props
+    const {item, board, propertyTemplate, propertyValue, property, readOnly} = props
     const [confirmAddUser, setConfirmAddUser] = useState<IUser|null>(null)
     const intl = useIntl()
 
@@ -29,7 +29,7 @@ const ConfirmPerson = (props: PropertyProps): JSX.Element => {
 
     const allowManageBoardRoles = useHasPermissions(board.teamId, board.id, [Permission.ManageBoardRoles])
     const allowAddUsers = !me?.is_guest && (allowManageBoardRoles || board.type === BoardTypeOpen)
-    const changePropertyValue = useCallback((newValue) => mutator.changePropertyValue(board.id, card, propertyTemplate.id, newValue), [board.id, card, propertyTemplate.id])
+    const changePropertyValue = useCallback((newValue) => mutator.changePropertyValue(board.id, item, propertyTemplate.id, newValue), [board.id, item, propertyTemplate.id])
     const emptyDisplayValue = props.showEmptyPlaceholder ? intl.formatMessage({id: 'ConfirmPerson.empty', defaultMessage: 'Empty'}) : ''
 
     let userIDs: string[] = []
