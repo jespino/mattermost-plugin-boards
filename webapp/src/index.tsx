@@ -313,18 +313,16 @@ export default class Plugin {
                 true,
             )
 
-            if (clientConfig?.featureFlags?.pagesProduct) {
-                this.registry.registerProduct(
-                             '/pages',
-                                  'file-text-outline',
-                                  'Pages',
-                                     '/pages',
-                    (props) => <MainApp {...props} baseURL={subpath + '/pages'}/>,
-                    () => <HeaderComponent/>,
-                    () => null,
-                    true,
-                )
-            }
+            this.registry.registerProduct(
+                          '/pages',
+                              'file-text-outline',
+                              'Pages',
+                                  '/pages',
+                (props) => <MainApp {...props} baseURL={subpath + '/pages'}/>,
+                () => <HeaderComponent/>,
+                () => null,
+                true,
+            )
 
             if (this.registry.registerAppBarComponent) {
                 this.registry.registerAppBarComponent(Utils.buildURL(appBarIcon, true), () => {
@@ -333,27 +331,25 @@ export default class Plugin {
                 }, intl.formatMessage({id: 'AppBar.Tooltip', defaultMessage: 'Toggle Linked Boards'}))
                 // this.registry.registerAppBarComponent(,  , intl.formatMessage({id: 'AppBar.TooltipPages', defaultMessage: 'Toggle Linked Pages'}))
 
-                if (clientConfig?.featureFlags?.pagesProduct) {
-                    // HACK: Register second app bar component
-                    // TODO: Remove this hack whenever is possible
-                    const data = {
-                        id: Utils.createGuid(IDType.None),
-                        pluginId: manifest.id+'pages',
-                        iconUrl: Utils.buildURL(appBarIconPages, true),
-                        action: () => {
-                            windowAny.frontendBaseURL = subpath + '/pages'
-                            mmStore.dispatch(toggleRHSPagesPlugin)
-                        },
-                        tooltipText: intl.formatMessage({id: 'AppBar.TooltipPages', defaultMessage: 'Toggle Linked Pages'}),
-                    }
-
-                    mmStore.dispatch({
-                        type: 'RECEIVED_PLUGIN_COMPONENT',
-                        name: 'AppBar',
-                        data,
-                    } as any);
-                    this.pagesAppIconId = data.id
+                // HACK: Register second app bar component
+                // TODO: Remove this hack whenever is possible
+                const data = {
+                    id: Utils.createGuid(IDType.None),
+                    pluginId: manifest.id+'pages',
+                    iconUrl: Utils.buildURL(appBarIconPages, true),
+                    action: () => {
+                        windowAny.frontendBaseURL = subpath + '/pages'
+                        mmStore.dispatch(toggleRHSPagesPlugin)
+                    },
+                    tooltipText: intl.formatMessage({id: 'AppBar.TooltipPages', defaultMessage: 'Toggle Linked Pages'}),
                 }
+
+                mmStore.dispatch({
+                    type: 'RECEIVED_PLUGIN_COMPONENT',
+                    name: 'AppBar',
+                    data,
+                } as any);
+                this.pagesAppIconId = data.id
             }
 
             if (this.registry.registerActionAfterChannelCreation) {

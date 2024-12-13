@@ -30,14 +30,11 @@ function FBRoute(props: RouteProps) {
     const me = useAppSelector<IUser|null>(getMe)
     const myConfig = useAppSelector(getMyConfig)
     const clientConfig = useAppSelector<ClientConfig>(getClientConfig)
-    const isPlugin = Utils.isFocalboardPlugin()
     const isPages = useContext(isPagesContext)
 
-    let basePath = ''
-    if (isPlugin && isPages) {
+    let basePath = '/boards'
+    if (isPages) {
         basePath = '/pages'
-    } else if (isPlugin && !isPages) {
-        basePath = '/boards'
     }
 
     let redirect: React.ReactNode = null
@@ -55,7 +52,7 @@ function FBRoute(props: RouteProps) {
     if (showWelcomePage) {
         const WelcomeRedirect = ({match}: any) => {
             if (props.getOriginalPath) {
-                return <Redirect to={`{$basePath}/welcome?r=${props.getOriginalPath!(match)}`}/>
+                return <Redirect to={`/welcome?r=${props.getOriginalPath!(match)}`}/>
             }
             return <Redirect to={basePath + '/welcome'}/>
         }
@@ -70,7 +67,7 @@ function FBRoute(props: RouteProps) {
                 if (redirectUrl.indexOf('//') === 0) {
                     redirectUrl = redirectUrl.slice(1)
                 }
-                const loginUrl = `${basePath}/error?id=not-logged-in&r=${encodeURIComponent(redirectUrl)}`
+                const loginUrl = basePath + `/error?id=not-logged-in&r=${encodeURIComponent(redirectUrl)}`
                 return <Redirect to={loginUrl}/>
             }
             return <Redirect to={basePath + '/error?id=not-logged-in'}/>
