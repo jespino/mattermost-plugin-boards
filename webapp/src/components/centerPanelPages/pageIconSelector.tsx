@@ -28,14 +28,14 @@ const PageIconSelector = React.memo((props: Props) => {
         document.body.click()
     }, [page?.boardId, page?.id, page?.fields?.icon, board.id, board.icon])
 
-    const onAddRandomIcon = useCallback(() => {
+    const onAddRandomIcon = useCallback(async () => {
         if (page.parentId === '') {
             mutator.changeBoardIcon(board.id, board.icon, BlockIcons.shared.randomIcon())
         }
         mutator.changeBlockIcon(page.boardId, page.id, page.fields?.icon, BlockIcons.shared.randomIcon())
     }, [page?.boardId, page?.id, page?.fields?.icon, board.id, board.icon])
 
-    const onRemoveIcon = useCallback(() => {
+    const onRemoveIcon = useCallback(async () => {
         if (page.parentId === '') {
             mutator.changeBoardIcon(board.id, board.icon, '', 'remove page icon')
         }

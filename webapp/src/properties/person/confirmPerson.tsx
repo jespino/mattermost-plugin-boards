@@ -86,11 +86,11 @@ const ConfirmPerson = (props: PropertyProps): JSX.Element => {
         await mutator.createBoardMember(newMember)
 
         if (propertyTemplate.type === 'multiPerson') {
-            await mutator.changePropertyValue(board.id, card, propertyTemplate.id, [...userIDs, newMember.userId])
+            await mutator.changePropertyValue(board.id, item, propertyTemplate.id, [...userIDs, newMember.userId])
         } else {
-            await mutator.changePropertyValue(board.id, card, propertyTemplate.id, newMember.userId)
+            await mutator.changePropertyValue(board.id, item, propertyTemplate.id, newMember.userId)
         }
-    }, [board, card, propertyTemplate, userIDs])
+    }, [board, item, propertyTemplate, userIDs])
 
     return (
         <>

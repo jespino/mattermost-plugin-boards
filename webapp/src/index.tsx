@@ -11,6 +11,7 @@ import {GlobalState} from 'mattermost-redux/types/store'
 import {selectTeam} from 'mattermost-redux/actions/teams'
 
 import appBarIcon from '../static/app-bar-icon.png'
+import appBarIconPages from '../static/app-bar-pages-icon.png'
 
 import TelemetryClient, {TelemetryActions, TelemetryCategory} from './telemetry/telemetryClient'
 import {setMattermostTheme} from './theme'

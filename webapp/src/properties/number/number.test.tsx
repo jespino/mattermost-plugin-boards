@@ -24,18 +24,18 @@ const mockedMutator = mocked(mutator)
 
 describe('properties/number', () => {
     let board: Board
-    let card: Card
+    let item: Card
     let propertyTemplate: IPropertyTemplate
     let baseProps: ComponentProps<typeof NumberEditor>
 
     beforeEach(() => {
         board = TestBlockFactory.createBoard()
-        card = TestBlockFactory.createCard()
+        item = TestBlockFactory.createCard()
         propertyTemplate = board.cardProperties[0]
 
         baseProps = {
             property: new NumberProperty(),
-            card,
+            item,
             board,
             propertyTemplate,
             propertyValue: '',
@@ -67,6 +67,6 @@ describe('properties/number', () => {
         const input = screen.getByRole('textbox')
         userEvent.type(input, `${value}{Enter}`)
 
-        expect(mockedMutator.changePropertyValue).toHaveBeenCalledWith(board.id, card, propertyTemplate.id, `${value}`)
+        expect(mockedMutator.changePropertyValue).toHaveBeenCalledWith(board.id, item, propertyTemplate.id, `${value}`)
     })
 })

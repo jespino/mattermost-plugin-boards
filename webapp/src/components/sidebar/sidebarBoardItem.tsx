@@ -7,13 +7,7 @@ import {Draggable} from 'react-beautiful-dnd'
 
 import {Board} from '../../blocks/board'
 import {BoardView, IViewType} from '../../blocks/boardView'
-import mutator from '../../mutator'
-import IconButton from '../../widgets/buttons/iconButton'
-import DeleteIcon from '../../widgets/icons/delete'
-import OptionsIcon from '../../widgets/icons/options'
-import Menu from '../../widgets/menu'
-import MenuWrapper from '../../widgets/menuWrapper'
-import BoardPermissionGate from '../permissions/boardPermissionGate'
+import {Page} from '../../blocks/page'
 
 import './sidebarBoardItem.scss'
 import {CategoryBoards} from '../../store/sidebar'
@@ -48,6 +42,7 @@ type Props = {
     onDeleteRequest: (board: Board) => void
     showBoard: (boardId: string) => void
     showView: (viewId: string, boardId: string) => void
+    showPage: (pageId: string, boardId: string) => void
     index: number
     draggedItemID?: string
     hideViews?: boolean

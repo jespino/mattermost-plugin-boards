@@ -139,7 +139,7 @@ describe('properties/person', () => {
                     showEmptyPlaceholder={false}
                     propertyTemplate={{} as IPropertyTemplate}
                     board={board}
-                    card={card}
+                    item={card}
                 />
             </ReduxProvider>,
         )
@@ -193,7 +193,7 @@ describe('properties/person', () => {
                     showEmptyPlaceholder={false}
                     propertyTemplate={{} as IPropertyTemplate}
                     board={board}
-                    card={card}
+                    item={card}
                 />
             </ReduxProvider>,
         )

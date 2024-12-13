@@ -205,8 +205,8 @@ func (a *App) createPagesCategory(userID, teamID string, existingCategoryBoards 
 	}
 
 	createdCategoryBoards := &model.CategoryBoards{
-		Category: *createdCategory,
-		BoardIDs: []string{},
+		Category:      *createdCategory,
+		BoardMetadata: []model.CategoryBoardMetadata{},
 	}
 
 	// get user's current team's baords
@@ -215,6 +215,7 @@ func (a *App) createPagesCategory(userID, teamID string, existingCategoryBoards 
 		return nil, fmt.Errorf("createBoardsCategory error fetching user's team's boards: %w", err)
 	}
 
+	boardIDsToAdd := []string{}
 	for _, board := range userTeamBoards {
 		boardMembership, ok := boardMemberByBoardID[board.ID]
 		if !ok {
@@ -237,8 +238,8 @@ func (a *App) createPagesCategory(userID, teamID string, existingCategoryBoards 
 		belongsToCategory := false
 
 		for _, categoryBoard := range existingCategoryBoards {
-			for _, boardID := range categoryBoard.BoardIDs {
-				if boardID == board.ID {
+			for _, metadata := range categoryBoard.BoardMetadata {
+				if metadata.BoardID == board.ID {
 					belongsToCategory = true
 					break
 				}

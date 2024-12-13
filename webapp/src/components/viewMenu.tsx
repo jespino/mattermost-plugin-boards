@@ -217,10 +217,6 @@ const ViewMenu = (props: Props) => {
 
         Utils.log('addpage')
 
-        if (!props.allowCreateView()) {
-            return
-        }
-
         const page = createPage()
         page.title = intl.formatMessage({id: 'View.NewPageTitle', defaultMessage: 'New Page'})
         page.parentId = board.id

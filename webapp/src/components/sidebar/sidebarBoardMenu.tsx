@@ -122,6 +122,7 @@ const SidebarBoardMenu = (props: Props) => {
             dispatch(updateBoardCategories([{
                 boardID: boardId,
                 categoryID: props.categoryBoards.id,
+                hidden: false,
             }]))
         }
 
