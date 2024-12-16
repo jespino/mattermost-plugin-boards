@@ -1,6 +1,14 @@
 /* eslint-disable */
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
+declare global {
+    namespace NodeJS {
+        interface ProcessEnv {
+            IS_PAGES: boolean;
+        }
+    }
+}
 import React, {useEffect} from 'react'
 import {createIntl, createIntlCache} from 'react-intl'
 import {Store, Action} from 'redux'

@@ -34,3 +34,37 @@
     ]
   }
 }
+{
+    "id": "com.mattermost.pages",
+    "name": "Mattermost Pages",
+    "description": "The Mattermost Pages plugin",
+    "homepage_url": "https://github.com/mattermost/focalboard",
+    "support_url": "https://github.com/mattermost/focalboard/issues",
+    "release_notes_url": "https://github.com/mattermost/focalboard/releases",
+    "icon_path": "assets/starter-template-icon.svg",
+    "version": "9.0.4",
+    "min_server_version": "7.2.0",
+    "server": {
+        "executables": {
+            "linux-amd64": "server/dist/plugin-linux-amd64",
+            "linux-arm64": "server/dist/plugin-linux-arm64",
+            "darwin-amd64": "server/dist/plugin-darwin-amd64",
+            "darwin-arm64": "server/dist/plugin-darwin-arm64",
+            "windows-amd64": "server/dist/plugin-windows-amd64.exe"
+        }
+    },
+    "webapp": {
+        "bundle_path": "webapp/dist/main.js"
+    },
+    "settings_schema": {
+        "header": "",
+        "footer": "",
+        "settings": [{
+            "key": "EnablePublicSharedBoards",
+            "type": "bool",
+            "display_name": "Enable Publicly-Shared Pages:",
+            "default": false,
+            "help_text": "This allows page editors to share pages that can be accessed by anyone with the link."
+        }]
+    }
+}

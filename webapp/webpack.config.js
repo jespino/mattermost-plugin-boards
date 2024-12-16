@@ -9,7 +9,8 @@ const {ModuleFederationPlugin} = require('webpack').container;
 
 const tsTransformer = require('@formatjs/ts-transformer');
 
-const PLUGIN_ID = require('../plugin.json').id;
+const IS_PAGES = process.env.APP_TYPE === 'pages';
+const PLUGIN_ID = require(IS_PAGES ? '../plugin.pages.json' : '../plugin.json').id;
 
 const NPM_TARGET = process.env.npm_lifecycle_event; //eslint-disable-line no-process-env
 const TARGET_IS_PRODUCT = NPM_TARGET?.endsWith(':product');
@@ -216,6 +217,7 @@ env.RUDDER_DATAPLANE_URL = JSON.stringify(process.env.RUDDER_DATAPLANE_URL || ''
 
 config.plugins.push(new webpack.DefinePlugin({
     'process.env': env,
+    'process.env.IS_PAGES': JSON.stringify(IS_PAGES),
 }));
 
 if (NPM_TARGET === 'start:product') {
