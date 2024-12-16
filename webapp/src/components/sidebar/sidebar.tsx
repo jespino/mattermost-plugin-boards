@@ -165,7 +165,7 @@ const Sidebar = (props: Props) => {
 
         // if the board doesn't belong to a category
         // we need to move it to the default "Boards" category
-        const boardsCategory = sidebarCategories.find((c) => c.name === 'Boards')
+        const boardsCategory = sidebarCategories.find((c) => c.name === 'Boards' || c.name === 'Pages')
         if (!boardsCategory) {
             Utils.logError('Boards category not found for user')
             return
