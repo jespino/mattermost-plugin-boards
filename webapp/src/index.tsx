@@ -261,96 +261,84 @@ export default class Plugin {
         if (this.registry.registerProduct) {
             windowAny.frontendBaseURL = subpath + '/boards'
 
-            const {rhsId, toggleRHSPlugin} = this.registry.registerRightHandSidebarComponent(
-                (props: {webSocketClient: MMWebSocketClient}) => (
-                    <ReduxProvider store={store}>
-                        <WithWebSockets manifest={manifest} webSocketClient={props.webSocketClient}>
-                            <RHSChannelBoards />
-                        </WithWebSockets>
-                    </ReduxProvider>
-                ),
-                <ErrorBoundary>
-                    <ReduxProvider store={store}>
-                        <RHSChannelBoardsHeader />
-                    </ReduxProvider>
-                </ErrorBoundary>
-                ,
-            )
-            this.rhsId = rhsId
 
-            const {rhsId: rhsPagesId, toggleRHSPlugin: toggleRHSPagesPlugin} = this.registry.registerRightHandSidebarComponent(
-                (props: {webSocketClient: MMWebSocketClient}) => (
-                    <ReduxProvider store={store}>
-                        <WithWebSockets manifest={manifest} webSocketClient={props.webSocketClient}>
-                            <isPagesContext.Provider value={true}>
-                                <RHSChannelBoards/>
-                            </isPagesContext.Provider>
-                        </WithWebSockets>
-                    </ReduxProvider>
-                ),
-                <ErrorBoundary>
-                    <ReduxProvider store={store}>
-                        <isPagesContext.Provider value={true}>
-                            <RHSChannelBoardsHeader/>
-                        </isPagesContext.Provider>
-                    </ReduxProvider>
-                </ErrorBoundary>
-                ,
-            )
-            this.rhsPagesId = rhsPagesId
+            if (manifest.id === 'com.mattermost.pages') {
+              this.channelHeaderButtonId = registry.registerChannelHeaderButtonAction(<FocalboardIcon/>, () => mmStore.dispatch(toggleRHSPagesPlugin), 'Pages', 'Pages')
+              this.registry.registerProduct(
+                            '/pages',
+                                'file-text-outline',
+                                'Pages',
+                                    '/pages',
+                  (props) => <MainApp {...props} baseURL={subpath + '/pages'}/>,
+                  () => <HeaderComponent/>,
+                  () => null,
+                  true,
+              )
+              const {rhsId: rhsPagesId, toggleRHSPlugin: toggleRHSPagesPlugin} = this.registry.registerRightHandSidebarComponent(
+                  (props: {webSocketClient: MMWebSocketClient}) => (
+                      <ReduxProvider store={store}>
+                          <WithWebSockets manifest={manifest} webSocketClient={props.webSocketClient}>
+                              <isPagesContext.Provider value={true}>
+                                  <RHSChannelBoards/>
+                              </isPagesContext.Provider>
+                          </WithWebSockets>
+                      </ReduxProvider>
+                  ),
+                  <ErrorBoundary>
+                      <ReduxProvider store={store}>
+                          <isPagesContext.Provider value={true}>
+                              <RHSChannelBoardsHeader/>
+                          </isPagesContext.Provider>
+                      </ReduxProvider>
+                  </ErrorBoundary>
+                  ,
+              )
+              this.rhsPagesId = rhsPagesId
+              if (this.registry.registerAppBarComponent) {
+                this.registry.registerAppBarComponent(Utils.buildURL(appBarIconPages, true), () => {
+                    windowAny.frontendBaseURL = subpath + '/pages'
+                    mmStore.dispatch(toggleRHSPagesPlugin)
+                }, intl.formatMessage({id: 'AppBar.TooltipPages', defaultMessage: 'Toggle Linked Pages'}))
+              }
+            } else {
+              const {rhsId, toggleRHSPlugin} = this.registry.registerRightHandSidebarComponent(
+                  (props: {webSocketClient: MMWebSocketClient}) => (
+                      <ReduxProvider store={store}>
+                          <WithWebSockets manifest={manifest} webSocketClient={props.webSocketClient}>
+                              <RHSChannelBoards />
+                          </WithWebSockets>
+                      </ReduxProvider>
+                  ),
+                  <ErrorBoundary>
+                      <ReduxProvider store={store}>
+                          <RHSChannelBoardsHeader />
+                      </ReduxProvider>
+                  </ErrorBoundary>
+                  ,
+              )
+              this.rhsId = rhsId
 
-            this.channelHeaderButtonId = registry.registerChannelHeaderButtonAction(<FocalboardIcon />, () => mmStore.dispatch(toggleRHSPlugin), 'Boards', 'Boards')
-            this.channelHeaderButtonId = registry.registerChannelHeaderButtonAction(<FocalboardIcon/>, () => mmStore.dispatch(toggleRHSPagesPlugin), 'Pages', 'Pages')
+              this.channelHeaderButtonId = registry.registerChannelHeaderButtonAction(<FocalboardIcon />, () => mmStore.dispatch(toggleRHSPlugin), 'Boards', 'Boards')
 
-            this.registry.registerProduct(
-                '/boards',
-                'product-boards',
-                'Boards',
-                '/boards',
-                (props) => <MainApp {...props} baseURL={subpath + '/boards'}/>,
-                () => <HeaderComponent/>,
-                () => null,
-                true,
-            )
+              this.registry.registerProduct(
+                  '/boards',
+                  'product-boards',
+                  'Boards',
+                  '/boards',
+                  (props) => <MainApp {...props} baseURL={subpath + '/boards'}/>,
+                  () => <HeaderComponent/>,
+                  () => null,
+                  true,
+              )
 
-            this.registry.registerProduct(
-                          '/pages',
-                              'file-text-outline',
-                              'Pages',
-                                  '/pages',
-                (props) => <MainApp {...props} baseURL={subpath + '/pages'}/>,
-                () => <HeaderComponent/>,
-                () => null,
-                true,
-            )
-
-            if (this.registry.registerAppBarComponent) {
-                this.registry.registerAppBarComponent(Utils.buildURL(appBarIcon, true), () => {
-                    windowAny.frontendBaseURL = subpath + '/boards'
-                    mmStore.dispatch(toggleRHSPlugin)
-                }, intl.formatMessage({id: 'AppBar.Tooltip', defaultMessage: 'Toggle Linked Boards'}))
-                // this.registry.registerAppBarComponent(,  , intl.formatMessage({id: 'AppBar.TooltipPages', defaultMessage: 'Toggle Linked Pages'}))
-
-                // HACK: Register second app bar component
-                // TODO: Remove this hack whenever is possible
-                const data = {
-                    id: Utils.createGuid(IDType.None),
-                    pluginId: manifest.id+'pages',
-                    iconUrl: Utils.buildURL(appBarIconPages, true),
-                    action: () => {
-                        windowAny.frontendBaseURL = subpath + '/pages'
-                        mmStore.dispatch(toggleRHSPagesPlugin)
-                    },
-                    tooltipText: intl.formatMessage({id: 'AppBar.TooltipPages', defaultMessage: 'Toggle Linked Pages'}),
-                }
-
-                mmStore.dispatch({
-                    type: 'RECEIVED_PLUGIN_COMPONENT',
-                    name: 'AppBar',
-                    data,
-                } as any);
-                this.pagesAppIconId = data.id
+              if (this.registry.registerAppBarComponent) {
+                  this.registry.registerAppBarComponent(Utils.buildURL(appBarIcon, true), () => {
+                      windowAny.frontendBaseURL = subpath + '/boards'
+                      mmStore.dispatch(toggleRHSPlugin)
+                  }, intl.formatMessage({id: 'AppBar.Tooltip', defaultMessage: 'Toggle Linked Boards'}))
+              }
             }
+
 
             if (this.registry.registerActionAfterChannelCreation) {
                 this.registry.registerActionAfterChannelCreation((props: {
