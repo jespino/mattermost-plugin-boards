@@ -289,7 +289,7 @@ class Utils {
     // Markdown
 
     static htmlFromMarkdown(text: string): string {
-        const renderer = this.getMarkdownRenderer() 
+        const renderer = this.getMarkdownRenderer()
         return this.htmlFromMarkdownWithRenderer(text, renderer)
     }
 
@@ -307,7 +307,7 @@ class Utils {
 
         renderer.table = (header, body) => {
             return `<div class="table-responsive"><table class="markdown__table"><thead>${header}</thead><tbody>${body}</tbody></table></div>`
-        } 
+        }
         return renderer
     }
 
@@ -586,11 +586,6 @@ class Utils {
     }
 
     static buildURL(path: string, absolute?: boolean): string {
-        /* eslint-disable no-process-env */
-        if (!Utils.isFocalboardPlugin() || process.env.TARGET_IS_PRODUCT) {
-            return path
-        }
-
         const baseURL = Utils.getBaseURL()
         let finalPath = baseURL + path
         if (path.indexOf('/') !== 0) {

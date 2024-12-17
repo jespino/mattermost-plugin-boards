@@ -2,13 +2,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-declare global {
-    namespace NodeJS {
-        interface ProcessEnv {
-            IS_PAGES: boolean;
-        }
-    }
-}
 import React, {useEffect} from 'react'
 import {createIntl, createIntlCache} from 'react-intl'
 import {Store, Action} from 'redux'
@@ -64,10 +57,15 @@ import './plugin.scss'
 import CloudUpgradeNudge from "./components/cloudUpgradeNudge/cloudUpgradeNudge"
 import CreateBoardFromTemplate from './components/createBoardFromTemplate'
 
+declare var APP_TYPE: string
+declare var RUDDER_KEY: string
+declare var RUDDER_DATAPLANE_URL: string
+
 const windowAny = (window as SuiteWindow)
-windowAny.baseURL = process.env.TARGET_IS_PRODUCT ? '/plugins/boards' : '/plugins/focalboard'
+windowAny.baseURL = APP_TYPE === 'pages' ? '/plugins/com.mattermost.pages' : '/plugins/boards'
 windowAny.frontendBaseURL = '/boards'
 windowAny.isFocalboardPlugin = true
+
 
 function getSubpath(siteURL: string): string {
     const url = new URL(siteURL)
@@ -173,7 +171,7 @@ export default class Plugin {
         let theme = mmStore.getState().entities.preferences.myPreferences.theme
         setMattermostTheme(theme)
 
-        const productID = process.env.TARGET_IS_PRODUCT ? 'boards' : manifest.id
+        const productID = APP_TYPE === 'pages' ? 'pages' : 'boards'
 
         // register websocket handlers
         this.registry?.registerWebSocketEventHandler(`custom_${productID}_${ACTION_UPDATE_BOARD}`, (e: any) => wsClient.updateHandler(e.data))
@@ -270,7 +268,7 @@ export default class Plugin {
             windowAny.frontendBaseURL = subpath + '/boards'
 
 
-            if (manifest.id === 'com.mattermost.pages') {
+            if (APP_TYPE === 'pages') {
               this.channelHeaderButtonId = registry.registerChannelHeaderButtonAction(<FocalboardIcon/>, () => mmStore.dispatch(toggleRHSPagesPlugin), 'Pages', 'Pages')
               this.registry.registerProduct(
                             '/pages',
@@ -415,8 +413,8 @@ export default class Plugin {
             let rudderUrl = TELEMETRY_RUDDER_DATAPLANE_URL
 
             if (rudderKey.startsWith('placeholder') && rudderUrl.startsWith('placeholder')) {
-                rudderKey = process.env.RUDDER_KEY as string //eslint-disable-line no-process-env
-                rudderUrl = process.env.RUDDER_DATAPLANE_URL as string //eslint-disable-line no-process-env
+                rudderKey = RUDDER_KEY as string
+                rudderUrl = RUDDER_DATAPLANE_URL as string
             }
 
             if (rudderKey !== '') {

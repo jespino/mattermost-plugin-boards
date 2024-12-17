@@ -9,6 +9,8 @@ let activeThemeName: string
 
 import {UserSettings} from './userSettings'
 
+declare var NODE_ENV: string
+
 export type Theme = {
     mainBg: string
     mainFg: string
@@ -139,7 +141,7 @@ export function setTheme(theme: Theme | null): Theme {
 
     const style = document.documentElement.style
 
-    if (process.env.NODE_ENV === 'test') {
+    if (NODE_ENV === 'test') {
         style.setProperty('--center-channel-bg-rgb', style.getPropertyValue('--center-channel-bg-rgb') || consolidatedTheme.mainBg)
         style.setProperty('--center-channel-color-rgb', style.getPropertyValue('--center-channel-color-rgb') || consolidatedTheme.mainBg)
         style.setProperty('--button-bg-rgb', style.getPropertyValue('--button-bg-rgb') || consolidatedTheme.mainBg)

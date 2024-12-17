@@ -28,15 +28,22 @@ GO ?= $(shell command -v go 2> /dev/null)
 NPM ?= $(shell command -v npm 2> /dev/null)
 CURL ?= $(shell command -v curl 2> /dev/null)
 MM_DEBUG ?=
-MANIFEST_FILE ?= plugin.json
 GOPATH ?= $(shell go env GOPATH)
 GO_TEST_FLAGS ?= -race
 GO_BUILD_FLAGS ?= -ldflags '$(LDFLAGS)'
 MM_UTILITIES_DIR ?= ../mattermost-utilities
 DLV_DEBUG_PORT := 2346
 MATTERMOST_PLUGINS_PATH=$(MM_SERVER_PATH)/plugins
+
+ifeq ($(APP_TYPE),pages)
+BOARD_PLUGIN_PATH=$(MATTERMOST_PLUGINS_PATH)/pages
+PLUGIN_NAME=pages
+MANIFEST_FILE ?= plugin.pages.json
+else
 BOARD_PLUGIN_PATH=$(MATTERMOST_PLUGINS_PATH)/boards
 PLUGIN_NAME=boards
+MANIFEST_FILE ?= plugin.json
+endif
 
 export GO111MODULE=on
 
@@ -73,7 +80,7 @@ check-style: webapp/node_modules
 	@echo Checking for style guide compliance
 
 ifneq ($(HAS_WEBAPP),)
-	cd webapp && npm run check 
+	cd webapp && npm run check
 	cd webapp && npm run check-types
 endif
 
@@ -128,14 +135,18 @@ else
 	cd webapp && $(NPM) run debug;
 endif
 endif
+ifeq ($(MM_DEBUG),)
 	cd webapp; npm run pack
+else
+	cd webapp; npm run packdev
+endif
 
 ## Generates a tar bundle of the plugin for install.
 .PHONY: bundle
 bundle:
 	rm -rf dist/
 	mkdir -p dist/$(PLUGIN_NAME)
-	cp $(MANIFEST_FILE) dist/$(PLUGIN_NAME)/
+	cp $(MANIFEST_FILE) dist/$(PLUGIN_NAME)/plugin.json
 	cp -r webapp/pack dist/$(PLUGIN_NAME)/
 ifneq ($(wildcard $(ASSETS_DIR)/.),)
 	cp -r $(ASSETS_DIR) dist/$(PLUGIN_NAME)/
@@ -366,7 +377,7 @@ generate: ## Install and run code generators.
 	cd server; go install github.com/golang/mock/mockgen@v1.6.0
 	cd server; go generate ./...
 
-server-ci: server-lint 
+server-ci: server-lint
 
 server-lint: ## Run linters on server code.
 	@if ! [ -x "$$(command -v golangci-lint)" ]; then \
@@ -413,7 +424,7 @@ swagger: ## Generate swagger API spec and clients based on it.
 
 # ====================================================================================
 # Used for semver bumping
-PROTECTED_BRANCH := main 
+PROTECTED_BRANCH := main
 APP_NAME    := $(shell basename -s .git `git config --get remote.origin.url`)
 CURRENT_VERSION := $(shell git describe --abbrev=0 --tags)
 VERSION_PARTS := $(subst ., ,$(subst v,,$(subst -rc, ,$(CURRENT_VERSION))))
