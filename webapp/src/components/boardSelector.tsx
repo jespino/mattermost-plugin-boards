@@ -22,6 +22,7 @@ import Button from '../widgets/buttons/button'
 import {getCurrentLinkToChannel, setLinkToChannel} from '../store/boards'
 import {WSClient} from '../wsclient'
 import {SuiteWindow} from '../types/index'
+import {Utils} from '../utils'
 
 import BoardSelectorItem from './boardSelectorItem'
 
@@ -112,7 +113,7 @@ const BoardSelector = () => {
     }
 
     const newLinkedBoard = async (): Promise<void> => {
-        window.open(`${windowAny.frontendBaseURL}/team/${teamId}/new/${currentChannel}`, '_blank', 'noopener')
+        window.open(`${Utils.getFrontendBaseURL()}/team/${teamId}/new/${currentChannel}`, '_blank', 'noopener')
         dispatch(setLinkToChannel(''))
     }
 

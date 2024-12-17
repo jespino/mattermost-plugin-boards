@@ -42,7 +42,7 @@ const RHSChannelBoardItem = (props: Props) => {
         const extraData = {teamID: team.id, board: boardID}
         TelemetryClient.trackEvent(TelemetryCategory, TelemetryActions.ClickChannelsRHSBoard, extraData)
 
-        window.open(`${windowAny.frontendBaseURL}/team/${team.id}/${boardID}`, '_blank', 'noopener')
+        window.open(`${Utils.getFrontendBaseURL()}/team/${team.id}/${boardID}`, '_blank', 'noopener')
     }
 
     const onUnlinkBoard = async (board: Board) => {

@@ -35,6 +35,9 @@ export type CategoryOrder = string[]
 
 export type WSMessagePayloads = Block | Category | BoardCategoryWebsocketData[] | BoardType | BoardMember | null | CategoryOrder
 
+declare var BASE_URL: string;
+declare var FRONTEND_URL: string;
+
 // eslint-disable-next-line no-shadow
 enum IDType {
     None = '7',
@@ -562,7 +565,7 @@ class Utils {
     }
 
     static getBaseURL(absolute?: boolean): string {
-        let baseURL = window.baseURL || ''
+        let baseURL = BASE_URL || ''
         baseURL = baseURL.replace(/\/+$/, '')
         if (baseURL.indexOf('/') === 0) {
             baseURL = baseURL.slice(1)
@@ -574,7 +577,7 @@ class Utils {
     }
 
     static getFrontendBaseURL(absolute?: boolean): string {
-        let frontendBaseURL = window.frontendBaseURL || Utils.getBaseURL()
+        let frontendBaseURL = FRONTEND_URL || Utils.getBaseURL()
         frontendBaseURL = frontendBaseURL.replace(/\/+$/, '')
         if (frontendBaseURL.indexOf('/') === 0) {
             frontendBaseURL = frontendBaseURL.slice(1)

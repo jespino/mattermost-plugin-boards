@@ -21,8 +21,7 @@ export interface IAppWindow extends Window {
 // the Mattermost suite environment
 export type SuiteWindow = Window & {
     getCurrentTeamId?: () => string
-    baseURL?: string
-    frontendBaseURL?: string
     isFocalboardPlugin?: boolean
     WebappUtils?: any
+    subpath?: string
 }

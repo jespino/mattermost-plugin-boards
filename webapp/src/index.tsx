@@ -60,11 +60,11 @@ import CreateBoardFromTemplate from './components/createBoardFromTemplate'
 declare var APP_TYPE: string
 declare var RUDDER_KEY: string
 declare var RUDDER_DATAPLANE_URL: string
+declare var FRONTEND_URL: string;
 
 const windowAny = (window as SuiteWindow)
-windowAny.baseURL = APP_TYPE === 'pages' ? '/plugins/com.mattermost.pages' : '/plugins/boards'
-windowAny.frontendBaseURL = '/boards'
 windowAny.isFocalboardPlugin = true
+windowAny.subpath = ''
 
 
 function getSubpath(siteURL: string): string {
@@ -96,10 +96,6 @@ type Props = {
 }
 
 const MainApp = (props: Props) => {
-    useEffect(() => {
-        windowAny.frontendBaseURL = props.baseURL
-    }, [props.baseURL])
-
     useEffect(() => {
         document.body.classList.add('focalboard-body')
         document.body.classList.add('app__body')
@@ -153,9 +149,7 @@ export default class Plugin {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-empty-function
     async initialize(registry: PluginRegistry, mmStore: Store<GlobalState, Action<Record<string, unknown>>>): Promise<void> {
         const siteURL = mmStore.getState().entities.general.config.SiteURL
-        const subpath = siteURL ? getSubpath(siteURL) : ''
-        windowAny.frontendBaseURL = subpath + windowAny.frontendBaseURL
-        windowAny.baseURL = subpath + windowAny.baseURL
+        windowAny.subpath = siteURL ? getSubpath(siteURL) : ''
         const cache = createIntlCache()
         const intl = createIntl({
             // modeled after <IntlProvider> in webapp/src/app.tsx
@@ -171,7 +165,7 @@ export default class Plugin {
         let theme = mmStore.getState().entities.preferences.myPreferences.theme
         setMattermostTheme(theme)
 
-        const productID = APP_TYPE === 'pages' ? 'pages' : 'boards'
+        const productID = APP_TYPE === 'pages' ? 'com.mattermost.pages' : 'focalboard'
 
         // register websocket handlers
         this.registry?.registerWebSocketEventHandler(`custom_${productID}_${ACTION_UPDATE_BOARD}`, (e: any) => wsClient.updateHandler(e.data))
@@ -226,10 +220,10 @@ export default class Plugin {
             // This handles the user selecting a team from the team sidebar.
             const currentTeamID = mmStore.getState().entities.teams.currentTeamId
             if (currentTeamID && currentTeamID !== prevTeamID) {
-                if (prevTeamID && window.location.pathname.startsWith(windowAny.frontendBaseURL || '')) {
+                if (prevTeamID && window.location.pathname.startsWith(FRONTEND_URL || '')) {
                     // Don't re-push the URL if we're already on a URL for the current team
-                    if (!window.location.pathname.startsWith(`${(windowAny.frontendBaseURL || '')}/team/${currentTeamID}`)) {
-                        if (windowAny.frontendBaseURL?.endsWith('/pages')) {
+                    if (!window.location.pathname.startsWith(`${(FRONTEND_URL || '')}/team/${currentTeamID}`)) {
+                        if (FRONTEND_URL?.endsWith('/pages')) {
                             windowAny.WebappUtils.browserHistory.push(`/pages/team/${currentTeamID}`)
                         } else {
                             windowAny.WebappUtils.browserHistory.push(`/boards/team/${currentTeamID}`)
@@ -265,9 +259,6 @@ export default class Plugin {
         })
 
         if (this.registry.registerProduct) {
-            windowAny.frontendBaseURL = subpath + '/boards'
-
-
             if (APP_TYPE === 'pages') {
               this.channelHeaderButtonId = registry.registerChannelHeaderButtonAction(<FocalboardIcon/>, () => mmStore.dispatch(toggleRHSPagesPlugin), 'Pages', 'Pages')
               this.registry.registerProduct(
@@ -275,7 +266,7 @@ export default class Plugin {
                                 'file-text-outline',
                                 'Pages',
                                     '/pages',
-                  (props) => <MainApp {...props} baseURL={subpath + '/pages'}/>,
+                  (props) => <MainApp {...props} baseURL={windowAny.subpath + '/pages'}/>,
                   () => <HeaderComponent/>,
                   () => null,
                   true,
@@ -302,7 +293,6 @@ export default class Plugin {
               this.rhsPagesId = rhsPagesId
               if (this.registry.registerAppBarComponent) {
                 this.registry.registerAppBarComponent(Utils.buildURL(appBarIconPages, true), () => {
-                    windowAny.frontendBaseURL = subpath + '/pages'
                     mmStore.dispatch(toggleRHSPagesPlugin)
                 }, intl.formatMessage({id: 'AppBar.TooltipPages', defaultMessage: 'Toggle Linked Pages'}))
               }
@@ -331,7 +321,7 @@ export default class Plugin {
                   'product-boards',
                   'Boards',
                   '/boards',
-                  (props) => <MainApp {...props} baseURL={subpath + '/boards'}/>,
+                  (props) => <MainApp {...props} baseURL={windowAny.subpath + '/boards'}/>,
                   () => <HeaderComponent/>,
                   () => null,
                   true,
@@ -339,7 +329,6 @@ export default class Plugin {
 
               if (this.registry.registerAppBarComponent) {
                   this.registry.registerAppBarComponent(Utils.buildURL(appBarIcon, true), () => {
-                      windowAny.frontendBaseURL = subpath + '/boards'
                       mmStore.dispatch(toggleRHSPlugin)
                   }, intl.formatMessage({id: 'AppBar.Tooltip', defaultMessage: 'Toggle Linked Boards'}))
               }

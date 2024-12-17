@@ -26,6 +26,7 @@ import {UserSettings} from './userSettings'
 import FBRoute from './route'
 
 declare let window: IAppWindow
+declare var FRONTEND_URL: string
 
 function HomeToCurrentTeam(props: {path: string, exact: boolean, basePath: string, isPages: boolean}) {
     return (
@@ -137,7 +138,7 @@ const FocalboardRouter = (props: Props): JSX.Element => {
     }
 
     useEffect(() => {
-        if (window.frontendBaseURL) {
+        if (FRONTEND_URL) {
             if (isPages) {
                 browserHistory.replace('/pages')
             } else {

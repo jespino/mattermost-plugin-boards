@@ -148,6 +148,8 @@ config.output = {
 
 config.plugins.push(new webpack.DefinePlugin({
     'APP_TYPE': JSON.stringify(process.env.APP_TYPE || 'boards'),
+    'BASE_URL': JSON.stringify(process.env.APP_TYPE === 'pages' ? '/plugins/com.mattermost.pages' : '/plugins/focalboard'),
+    'FRONTEND_URL': JSON.stringify(process.env.APP_TYPE === 'pages' ? '/pages' : '/boards'),
     'RUDDER_KEY': JSON.stringify(process.env.RUDDER_KEY || ''),
     'RUDDER_DATAPLANE_URL': JSON.stringify(process.env.RUDDER_DATAPLANE_URL || ''),
     'NODE_ENV': JSON.stringify(process.env.NODE_ENV || ''),

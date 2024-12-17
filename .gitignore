@@ -53,3 +53,4 @@ server/vendor
 .idea
 server/**/*.coverage
 ./dist
+.aider*

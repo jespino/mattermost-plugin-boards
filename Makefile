@@ -17,12 +17,26 @@ ifeq ($(MM_SERVER_PATH),)
 	MM_SERVER_PATH := ../mattermost
 endif
 
+MATTERMOST_PLUGINS_PATH=$(MM_SERVER_PATH)/plugins
+
 BUILD_TAGS += json1 sqlite3
 
-LDFLAGS += -X "github.com/mattermost/focalboard/server/model.BuildNumber=$(BUILD_NUMBER)"
-LDFLAGS += -X "github.com/mattermost/focalboard/server/model.BuildDate=$(BUILD_DATE)"
-LDFLAGS += -X "github.com/mattermost/focalboard/server/model.BuildHash=$(BUILD_HASH)"
-LDFLAGS += -X "github.com/mattermost/focalboard/server/model.Edition=plugin"
+LDFLAGS += -X "github.com/mattermost/mattermost-plugin-boards/server/model.BuildNumber=$(BUILD_NUMBER)"
+LDFLAGS += -X "github.com/mattermost/mattermost-plugin-boards/server/model.BuildDate=$(BUILD_DATE)"
+LDFLAGS += -X "github.com/mattermost/mattermost-plugin-boards/server/model.BuildHash=$(BUILD_HASH)"
+LDFLAGS += -X "github.com/mattermost/mattermost-plugin-boards/server/model.Edition=plugin"
+
+ifeq ($(APP_TYPE),pages)
+BOARD_PLUGIN_PATH=$(MATTERMOST_PLUGINS_PATH)/pages
+PLUGIN_NAME=pages
+MANIFEST_FILE ?= plugin.pages.json
+LDFLAGS += -X "github.com/mattermost/mattermost-plugin-boards/server/ws.WebsocketMessagePrefix=custom_com.mattermost.pages"
+else
+BOARD_PLUGIN_PATH=$(MATTERMOST_PLUGINS_PATH)/boards
+PLUGIN_NAME=boards
+MANIFEST_FILE ?= plugin.json
+LDFLAGS += -X "github.com/mattermost/mattermost-plugin-boards/server/ws.WebsocketMessagePrefix=custom_focalboard"
+endif
 
 GO ?= $(shell command -v go 2> /dev/null)
 NPM ?= $(shell command -v npm 2> /dev/null)
@@ -33,17 +47,6 @@ GO_TEST_FLAGS ?= -race
 GO_BUILD_FLAGS ?= -ldflags '$(LDFLAGS)'
 MM_UTILITIES_DIR ?= ../mattermost-utilities
 DLV_DEBUG_PORT := 2346
-MATTERMOST_PLUGINS_PATH=$(MM_SERVER_PATH)/plugins
-
-ifeq ($(APP_TYPE),pages)
-BOARD_PLUGIN_PATH=$(MATTERMOST_PLUGINS_PATH)/pages
-PLUGIN_NAME=pages
-MANIFEST_FILE ?= plugin.pages.json
-else
-BOARD_PLUGIN_PATH=$(MATTERMOST_PLUGINS_PATH)/boards
-PLUGIN_NAME=boards
-MANIFEST_FILE ?= plugin.json
-endif
 
 export GO111MODULE=on
 

@@ -16,7 +16,7 @@ import (
 	"github.com/mattermost/mattermost/server/public/shared/mlog"
 )
 
-const websocketMessagePrefix = "custom_focalboard_"
+const WebsocketMessagePrefix = "custom_com.mattermost.pages_"
 
 var errMissingTeamInCommand = fmt.Errorf("command doesn't contain teamId")
 
@@ -306,7 +306,7 @@ func (pa *PluginAdapter) OnWebSocketDisconnect(webConnID, userID string) {
 }
 
 func commandFromRequest(req *mmModel.WebSocketRequest) (*WebsocketCommand, error) {
-	c := &WebsocketCommand{Action: strings.TrimPrefix(req.Action, websocketMessagePrefix)}
+	c := &WebsocketCommand{Action: strings.TrimPrefix(req.Action, WebsocketMessagePrefix)}
 
 	if teamID, ok := req.Data["teamId"]; ok {
 		c.TeamID = teamID.(string)
@@ -337,7 +337,7 @@ func (pa *PluginAdapter) WebSocketMessageHasBeenPosted(webConnID, userID string,
 	}
 
 	// only process messages using the plugin actions
-	if !strings.HasPrefix(req.Action, websocketMessagePrefix) {
+	if !strings.HasPrefix(req.Action, WebsocketMessagePrefix) {
 		return
 	}
 
